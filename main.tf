@@ -32,7 +32,7 @@ resource "azurerm_public_ip" "development1" {
     name                         = "devPublicIp1"
     location                     = "South Central US"
     resource_group_name          = "${azurerm_resource_group.development.name}"
-    public_ip_address_allocation = "dynamic"
+    public_ip_address_allocation = "static"
 }
 
 resource "azurerm_network_security_group" "development" {

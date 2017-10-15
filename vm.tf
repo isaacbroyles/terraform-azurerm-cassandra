@@ -28,7 +28,7 @@ resource "azurerm_virtual_machine" "development" {
   vm_size               = "Standard_A1"
 
   # Uncomment this line to delete the OS disk automatically when deleting the VM
-  # delete_os_disk_on_termination = true
+  delete_os_disk_on_termination = true
 
   # Uncomment this line to delete the data disks automatically when deleting the VM
   # delete_data_disks_on_termination = true
@@ -64,7 +64,39 @@ resource "azurerm_virtual_machine" "development" {
     disable_password_authentication = true
     ssh_keys {
       path = "/home/terraform/.ssh/authorized_keys"
-      key_data = "${file("${var.key_data}")}"
+      key_data = "${file("${var.public_key_data}")}"
+    }
+  }
+
+  provisioner "remote-exec" {
+    inline = ["sudo mkdir -p /tmp/provisioning",
+      "sudo chown -R terraform:terraform  /tmp/provisioning/"]
+    connection {
+      host = "${azurerm_public_ip.development1.ip_address}"
+      type = "ssh"
+      user = "terraform"
+      private_key = "${file("${var.private_key_data}")}"
+    }
+  }
+
+  provisioner "file" {
+    source      = "scripts/cassandra/setup_cassandra.sh"
+    destination = "/tmp/provisioning/setup_cassandra.sh"
+    connection {
+      host = "${azurerm_public_ip.development1.ip_address}"
+      type = "ssh"
+      user = "terraform"
+      private_key = "${file("${var.private_key_data}")}"
+    }
+  }
+
+    provisioner "remote-exec" {
+    inline = ["sh /tmp/provisioning/setup_cassandra.sh"]
+    connection {
+      host = "${azurerm_public_ip.development1.ip_address}"
+      type = "ssh"
+      user = "terraform"
+      private_key = "${file("${var.private_key_data}")}"
     }
   }
 }
