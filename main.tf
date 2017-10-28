@@ -28,13 +28,6 @@ resource "azurerm_subnet" "development" {
   address_prefix       = "10.0.1.0/24"
 }
 
-resource "azurerm_public_ip" "development1" {
-    name                         = "devPublicIp1"
-    location                     = "South Central US"
-    resource_group_name          = "${azurerm_resource_group.development.name}"
-    public_ip_address_allocation = "static"
-}
-
 resource "azurerm_network_security_group" "development" {
     name                = "developmentSecurityGroup"
     location            = "South Central US"

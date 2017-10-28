@@ -5,6 +5,8 @@ echo "deb http://www.apache.org/dist/cassandra/debian 311x main" | sudo tee -a /
 curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
 sudo apt-get update
 sudo apt-get install -y cassandra
+sudo sed -i "s/seeds: \"127.0.0.1\"/seeds: \"$1\"/g" /etc/cassandra/cassandra.yaml
+sudo sed -i "s/listen_address: localhost/listen_address: $2/g" /etc/cassandra/cassandra.yaml
 sudo systemctl daemon-reload
 sudo systemctl enable cassandra
 sudo systemctl start cassandra
