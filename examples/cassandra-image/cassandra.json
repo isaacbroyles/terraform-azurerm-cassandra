@@ -1,0 +1,57 @@
+{
+    "min_packer_version": "1.1.1",
+    "variables": {
+      "subscription_id": null,
+      "tenant_id": "{{env `ARM_TENANT_ID`}}",
+      "azure_location": null,
+      "cassandra_version": null,
+      "github_oauth_token": "{{env `GITHUB_OAUTH_TOKEN`}}",
+      "resource_group_name": null
+    },
+    "builders": [
+      {
+        "type": "azure-arm",
+        "subscription_id": "{{user `subscription_id`}}",
+        "tenant_id": "{{user `tenant_id`}}",
+        "client_id": "{{user `client_id`}}",
+        "client_secret": "{{user `client_secret`}}",
+        "managed_image_name": "cassandra-{{user `cassandra_version`}}-ubuntu-{{isotime \"2006-01-02-150405\"}}",
+        "managed_image_resource_group_name": "{{user `resource_group_name`}}",
+        "os_type": "Linux",
+        "image_publisher": "Canonical",
+        "image_offer": "UbuntuServer",
+        "image_sku": "16.04.0-LTS",
+        "location": "{{user `azure_location`}}",
+        "vm_size": "Standard_A1"
+      }
+    ],
+    "provisioners": [
+      {
+        "type": "file",
+        "source": "{{template_dir}}/../../../terraform-azurerm-cassandra",
+        "destination": "/tmp"
+      },
+      {
+        "type": "shell",
+        "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+        "inline_shebang": "/bin/sh -x",
+        "inline": [
+          "DEBIAN_FRONTEND=noninteractive apt-get -y upgrade",
+          "echo \"deb https://packages.microsoft.com/repos/azure-cli/ wheezy main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list",
+          "apt-key adv --keyserver packages.microsoft.com --recv-keys 417A0893",
+          "apt-get update && apt-get install -y git libssl-dev libffi-dev python-dev build-essential apt-transport-https azure-cli",
+  
+          "chmod +x /tmp/terraform-azurerm-cassandra/modules/install-cassandra/install-cassandra",
+          "/tmp/terraform-azurerm-cassandra/modules/install-cassandra/install-cassandra --series {{user `cassandra_version`}}"
+        ]
+      },
+      {
+        "type": "shell",
+        "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'",
+        "inline": [
+          "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"
+        ],
+        "inline_shebang": "/bin/sh -x"
+      }
+    ]
+  }

@@ -1,7 +1,12 @@
+# Terraform files
 .terraform/
 terraform.tfstate*
 .terraform.tfstate*
 terraform.tfvars
+
+# vscode files
 .vscode/
 
+# packer files
 examples/cassandra-image/my-variables.json
+examples/cassandra-image/*.pem

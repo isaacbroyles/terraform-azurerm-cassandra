@@ -87,6 +87,7 @@ function install_cassandra {
 
   log_info "Copying Cassandra run script to $run_cassandra_dest_path"
   sudo cp "$SCRIPT_DIR/../run-cassandra/run-cassandra" "$run_cassandra_dest_path"
+  sudo chmod +x "$run_cassandra_dest_path"
 }
 
 function install {
