@@ -1,0 +1,105 @@
+#!/bin/bash
+
+set -e
+
+function print_usage {
+  echo
+  echo "Usage: run-cassandra [OPTIONS]"
+  echo
+  echo "This script is used to configure and run Cassandra on an Azure server."
+  echo
+  echo "Options:"
+  echo
+  echo -e "  --seeds\tThis variable is the comma-separated list of IP addresses used by gossip for bootstrapping new nodes joining a cluster. Required."
+  echo -e "  --listen\tThis variable is for controlling which IP address to listen for incoming connections on. Required."
+  echo
+  echo "Example:"
+  echo
+  echo "  run-cassandra --seeds CASSANDRA_SEEDS --listen CASSANDRA_LISTEN_ADDRESS"
+}
+
+function log {
+  local readonly level="$1"
+  local readonly message="$2"
+  local readonly timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
+}
+
+function log_info {
+  local readonly message="$1"
+  log "INFO" "$message"
+}
+
+function log_warn {
+  local readonly message="$1"
+  log "WARN" "$message"
+}
+
+function log_error {
+  local readonly message="$1"
+  log "ERROR" "$message"
+}
+
+function assert_not_empty {
+  local readonly arg_name="$1"
+  local readonly arg_value="$2"
+
+  if [[ -z "$arg_value" ]]; then
+    log_error "The value for '$arg_name' cannot be empty"
+    print_usage
+    exit 1
+  fi
+}
+
+function update_config {
+  local readonly seeds="$1"
+  local readonly listen="$2"
+
+  sudo sed -i "s/seeds: \"127.0.0.1\"/seeds: \"$seeds\"/g" /etc/cassandra/cassandra.yaml
+  sudo sed -i "s/listen_address: localhost/listen_address: $listen/g" /etc/cassandra/cassandra.yaml
+}
+
+function run_service {
+  sudo systemctl daemon-reload
+  sudo systemctl enable cassandra
+  sudo systemctl start cassandra
+}
+
+function run {
+  local seeds=""
+  local listen=""
+
+  while [[ $# > 0 ]]; do
+    local key="$1"
+
+    case "$key" in
+      --seeds)
+        seeds="$2"
+        shift
+        ;;
+      --listen)
+        listen="$2"
+        shift
+        ;;
+      --help)
+        print_usage
+        exit
+        ;;
+      *)
+        log_error "Unrecognized argument: $key"
+        print_usage
+        exit 1
+        ;;
+    esac
+
+    shift
+  done
+
+  assert_not_empty "--seeds" "$seeds"
+  assert_not_empty "--listen" "$listen"
+
+  update_config "$seeds" "$listen"
+  run_service
+}
+
+run "$@"

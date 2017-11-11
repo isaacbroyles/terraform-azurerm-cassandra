@@ -2,3 +2,6 @@
 terraform.tfstate*
 .terraform.tfstate*
 terraform.tfvars
+.vscode/
+
+examples/cassandra-image/my-variables.json
