@@ -1,6 +1,10 @@
 # Configure the Microsoft Azure Provider
 provider "azurerm" {}
 
+terraform {
+  required_version = ">= 0.10.0"
+}
+
 # Create a resource group
 resource "azurerm_resource_group" "development" {
   name     = "development"
