@@ -35,11 +35,6 @@ variable "key_data" {
   description = "The SSH public key that will be added to SSH authorized_users on the cassandra instances"
 }
 
-variable "allowed_inbound_cidr_blocks" {
-  description = "A list of CIDR-formatted IP address ranges from which the Azure Instances will allow connections to Cassandra"
-  type        = "list"
-}
-
 variable "custom_data" {
   description = "A Custom Data script to execute while the server is booting. We remmend passing in a bash script that executes the run-cassandra script, which should have been installed in the Cassandra Image by the install-cassandra module."
 }

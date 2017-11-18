@@ -5,7 +5,7 @@ terraform {
 #---------------------------------------------------------------------------------------------------------------------
 # CREATE A LOAD BALANCER FOR TEST ACCESS (SHOULD BE DISABLED FOR PROD)
 #---------------------------------------------------------------------------------------------------------------------
-resource "azurerm_public_ip" "consul_access" {
+resource "azurerm_public_ip" "cassandra_access" {
   count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
   name = "${var.cluster_name}_access"
   location = "${var.location}"
@@ -14,7 +14,7 @@ resource "azurerm_public_ip" "consul_access" {
   domain_name_label = "${var.cluster_name}"
 }
 
-resource "azurerm_lb" "consul_access" {
+resource "azurerm_lb" "cassandra_access" {
   count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
   name = "${var.cluster_name}_access"
   location = "${var.location}"
@@ -22,15 +22,15 @@ resource "azurerm_lb" "consul_access" {
 
   frontend_ip_configuration {
     name = "PublicIPAddress"
-    public_ip_address_id = "${azurerm_public_ip.consul_access.id}"
+    public_ip_address_id = "${azurerm_public_ip.cassandra_access.id}"
   }
 }
 
-resource "azurerm_lb_nat_pool" "consul_lbnatpool" {
+resource "azurerm_lb_nat_pool" "cassandra_lbnatpool" {
   count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
   resource_group_name = "${var.resource_group_name}"
   name = "ssh"
-  loadbalancer_id = "${azurerm_lb.consul_access.id}"
+  loadbalancer_id = "${azurerm_lb.cassandra_access.id}"
   protocol = "Tcp"
   frontend_port_start = 2200
   frontend_port_end = 2299
@@ -38,42 +38,18 @@ resource "azurerm_lb_nat_pool" "consul_lbnatpool" {
   frontend_ip_configuration_name = "PublicIPAddress"
 }
 
-resource "azurerm_lb_nat_pool" "consul_lbnatpool_rpc" {
+resource "azurerm_lb_backend_address_pool" "cassandra_bepool" {
   count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
   resource_group_name = "${var.resource_group_name}"
-  name = "rpc"
-  loadbalancer_id = "${azurerm_lb.consul_access.id}"
-  protocol = "Tcp"
-  frontend_port_start = 8300
-  frontend_port_end = 8399
-  backend_port = 8300
-  frontend_ip_configuration_name = "PublicIPAddress"
-}
-
-resource "azurerm_lb_nat_pool" "consul_lbnatpool_http" {
-  count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
-  resource_group_name = "${var.resource_group_name}"
-  name = "http"
-  loadbalancer_id = "${azurerm_lb.consul_access.id}"
-  protocol = "Tcp"
-  frontend_port_start = 8500
-  frontend_port_end = 8599
-  backend_port = 8500
-  frontend_ip_configuration_name = "PublicIPAddress"
-}
-
-resource "azurerm_lb_backend_address_pool" "consul_bepool" {
-  count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
-  resource_group_name = "${var.resource_group_name}"
-  loadbalancer_id = "${azurerm_lb.consul_access.id}"
+  loadbalancer_id = "${azurerm_lb.cassandra_access.id}"
   name = "BackEndAddressPool"
 }
 
 #---------------------------------------------------------------------------------------------------------------------
-# CREATE A VIRTUAL MACHINE SCALE SET TO RUN CONSUL (WITHOUT LOAD BALANCER)
+# CREATE A VIRTUAL MACHINE SCALE SET TO RUN CASSANDRA (WITHOUT LOAD BALANCER)
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_machine_scale_set" "consul" {
+resource "azurerm_virtual_machine_scale_set" "cassandra" {
   count = "${var.associate_public_ip_address_load_balancer ? 0 : 1}"
   name = "${var.cluster_name}"
   location = "${var.location}"
@@ -105,11 +81,11 @@ resource "azurerm_virtual_machine_scale_set" "consul" {
   }
 
   network_profile {
-    name = "ConsulNetworkProfile"
+    name = "CassandraNetworkProfile"
     primary = true
 
     ip_configuration {
-      name = "ConsulIPConfiguration"
+      name = "CassandraIPConfiguration"
       subnet_id = "${var.subnet_id}"
     }
   }
@@ -132,10 +108,10 @@ resource "azurerm_virtual_machine_scale_set" "consul" {
 }
 
 #---------------------------------------------------------------------------------------------------------------------
-# CREATE A VIRTUAL MACHINE SCALE SET TO RUN CONSUL (WITH LOAD BALANCER)
+# CREATE A VIRTUAL MACHINE SCALE SET TO RUN CASSANDRA (WITH LOAD BALANCER)
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_virtual_machine_scale_set" "consul_with_load_balancer" {
+resource "azurerm_virtual_machine_scale_set" "cassandra_with_load_balancer" {
   count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
   name = "${var.cluster_name}"
   location = "${var.location}"
@@ -167,15 +143,15 @@ resource "azurerm_virtual_machine_scale_set" "consul_with_load_balancer" {
   }
 
   network_profile {
-    name = "ConsulNetworkProfile"
+    name = "CassandraNetworkProfile"
     primary = true
 
     ip_configuration {
-      name = "ConsulIPConfiguration"
+      name = "CassandraIPConfiguration"
       subnet_id = "${var.subnet_id}"
       load_balancer_backend_address_pool_ids = [
-        "${azurerm_lb_backend_address_pool.consul_bepool.id}"]
-      load_balancer_inbound_nat_rules_ids = ["${element(azurerm_lb_nat_pool.consul_lbnatpool.*.id, count.index)}"]
+        "${azurerm_lb_backend_address_pool.cassandra_bepool.id}"]
+      load_balancer_inbound_nat_rules_ids = ["${element(azurerm_lb_nat_pool.cassandra_lbnatpool.*.id, count.index)}"]
     }
   }
 
@@ -200,7 +176,7 @@ resource "azurerm_virtual_machine_scale_set" "consul_with_load_balancer" {
 # CREATE A SECURITY GROUP AND RULES FOR SSH
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "azurerm_network_security_group" "consul" {
+resource "azurerm_network_security_group" "cassandra" {
   name = "${var.cluster_name}"
   location = "${var.location}"
   resource_group_name = "${var.resource_group_name}"
@@ -214,29 +190,10 @@ resource "azurerm_network_security_rule" "ssh" {
   destination_port_range = "22"
   direction = "Inbound"
   name = "SSH${count.index}"
-  network_security_group_name = "${azurerm_network_security_group.consul.name}"
+  network_security_group_name = "${azurerm_network_security_group.cassandra.name}"
   priority = "${100 + count.index}"
   protocol = "Tcp"
   resource_group_name = "${var.resource_group_name}"
   source_address_prefix = "${element(var.allowed_ssh_cidr_blocks, count.index)}"
   source_port_range = "1024-65535"
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# THE CONSUL-SPECIFIC INBOUND/OUTBOUND RULES COME FROM THE CONSUL-SECURITY-GROUP-RULES MODULE
-# ---------------------------------------------------------------------------------------------------------------------
-
-module "security_group_rules" {
-  source = "../consul-security-group-rules"
-
-  security_group_name = "${azurerm_network_security_group.consul.name}"
-  resource_group_name = "${var.resource_group_name}"
-  allowed_inbound_cidr_blocks = ["${var.allowed_inbound_cidr_blocks}"]
-
-  server_rpc_port = "${var.server_rpc_port}"
-  cli_rpc_port    = "${var.cli_rpc_port}"
-  serf_lan_port   = "${var.serf_lan_port}"
-  serf_wan_port   = "${var.serf_wan_port}"
-  http_api_port   = "${var.http_api_port}"
-  dns_port        = "${var.dns_port}"
 }
