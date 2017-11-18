@@ -26,24 +26,6 @@ resource "azurerm_subnet" "cassandra" {
   address_prefix       = "10.0.1.0/24"
 }
 
-resource "azurerm_network_security_group" "development" {
-    name                = "developmentSecurityGroup"
-    location            = "${var.location}"
-    resource_group_name = "${azurerm_resource_group.development.name}"
-
-    security_rule {
-        name                       = "SSH"
-        priority                   = 1001
-        direction                  = "Inbound"
-        access                     = "Allow"
-        protocol                   = "Tcp"
-        source_port_range          = "*"
-        destination_port_range     = "22"
-        source_address_prefix      = "*"
-        destination_address_prefix = "*"
-    }
-}
-
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY THE CASSANDRA SERVER NODES
 # ---------------------------------------------------------------------------------------------------------------------
