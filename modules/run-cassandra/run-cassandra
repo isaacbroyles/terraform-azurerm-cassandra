@@ -62,6 +62,7 @@ function update_config {
 function run_service {
   sudo systemctl daemon-reload
   sudo systemctl enable cassandra
+  sudo systemctl stop cassandra
   sudo systemctl start cassandra
 }
 
