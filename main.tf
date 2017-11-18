@@ -11,12 +11,6 @@ resource "azurerm_resource_group" "development" {
   location = "${var.location}"
 }
 
-resource "azurerm_availability_set" "development" {
-  name                = "developmentAvailabilitySet"
-  location            = "${var.location}"
-  resource_group_name = "${azurerm_resource_group.development.name}"
-}
-
 # Create a virtual network in the web_servers resource group
 resource "azurerm_virtual_network" "network" {
   name                = "devNetwork"
