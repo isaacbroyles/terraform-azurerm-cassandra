@@ -10,7 +10,7 @@ set -e
 exec > >(tee /var/log/custom-data.log|logger -t custom-data -s 2>/dev/console) 2>&1
 
 IFS=',' read -ra ADDR <<< "${seeds}"
-for i in "${ADDR[@]}"; do
+for i in "$${ADDR[@]}"; do
   echo "Waiting cassandra seeds to launch on 7000..."
 
   while ! nc -z $i 7000; do   
