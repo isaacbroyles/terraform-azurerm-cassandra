@@ -73,5 +73,5 @@ variable "num_cassandra_servers" {
 
 variable "listen" {
   description = "The address for the Cassandra server to listen on"
-  default = "127.0.0.1"
+  default = ""
 }

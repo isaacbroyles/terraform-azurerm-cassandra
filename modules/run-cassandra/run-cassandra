@@ -71,6 +71,26 @@ function update_config {
   sudo sed -i "s/listen_address: localhost/listen_address: $listen/g" /etc/cassandra/cassandra.yaml
 }
 
+function wait_for_seeds {
+  local readonly seeds="$1"
+  local readonly listen="$2"
+
+  IFS=',' read -ra ADDR <<< "$seeds"
+  for i in "${ADDR[@]}"; do
+    echo "Waiting for cassandra seeds to launch on 7000..."
+
+    # do not wait for this instance to come online
+    if [ "$i" == "$listen" ]; then
+      echo "Local instance in seeds list, skipping..."
+      continue;
+    fi
+
+    while ! nc -z $i 7000; do   
+      sleep 0.1 # wait for 1/10 of the second before check again
+    done
+  done
+}
+
 function run_service {
   sudo systemctl daemon-reload
   sudo systemctl enable cassandra
@@ -115,9 +135,12 @@ function run {
 
   if [[ -z "$listen" ]]; then
     listen=$instance_ip_address
-  fi
+  fi  
+
+  wait_for_seeds "$seeds" "$listen"
 
   update_config "$seeds" "$listen"
+
   run_service
 }
 
