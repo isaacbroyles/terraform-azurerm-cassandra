@@ -25,20 +25,16 @@ variable "resource_group_name" {
   description = "The name of the Azure resource group cassandra will be deployed into. This RG should already exist"
 }
 
-variable "storage_account_name" {
-  description = "The name of an Azure Storage Account. This SA should already exist"
-}
-
-# variable "storage_account_key" {
-#   description = "The key for storage_account_name."
-# }
-
 variable "image_uri" {
   description = "The URI to the Azure image that should be deployed to the cassandra cluster."
 }
 
 variable "key_data" {
   description = "The SSH public key that will be added to SSH authorized_users on the cassandra instances"
+}
+
+variable "seeds" {
+  description = "The list of seeds to bootstrap new cassandra nodes with."
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -73,4 +69,9 @@ variable "instance_size" {
 variable "num_cassandra_servers" {
   description = "The number of Cassandra server nodes to deploy. We strongly recommend using 3 or 5."
   default = 3
+}
+
+variable "listen" {
+  description = "The address for the Cassandra server to listen on"
+  default = "127.0.0.1"
 }
