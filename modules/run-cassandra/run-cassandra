@@ -2,6 +2,8 @@
 
 set -e
 
+readonly AZURE_INSTANCE_METADATA_URL="http://169.254.169.254/metadata/instance?api-version=2017-08-01"
+
 function print_usage {
   echo
   echo "Usage: run-cassandra [OPTIONS]"
@@ -11,7 +13,7 @@ function print_usage {
   echo "Options:"
   echo
   echo -e "  --seeds\tThis variable is the comma-separated list of IP addresses used by gossip for bootstrapping new nodes joining a cluster. Required."
-  echo -e "  --listen\tThis variable is for controlling which IP address to listen for incoming connections on. Required."
+  echo -e "  --listen\tThis variable is for controlling which IP address to listen for incoming connections on. If not specified will attempt to default to the Azure instance IP."
   echo
   echo "Example:"
   echo
@@ -51,6 +53,16 @@ function assert_not_empty {
   fi
 }
 
+function lookup_path_in_instance_metadata {
+  local readonly path="$1"
+  curl --silent --show-error --header Metadata:true --location "$AZURE_INSTANCE_METADATA_URL" | jq -r "$path"
+}
+
+function get_instance_ip_address {
+  lookup_path_in_instance_metadata ".network.interface[0].ipv4.ipAddress[0].privateIpAddress"
+}
+
+
 function update_config {
   local readonly seeds="$1"
   local readonly listen="$2"
@@ -69,6 +81,7 @@ function run_service {
 function run {
   local seeds=""
   local listen=""
+  local instance_ip_address
 
   while [[ $# > 0 ]]; do
     local key="$1"
@@ -97,7 +110,12 @@ function run {
   done
 
   assert_not_empty "--seeds" "$seeds"
-  assert_not_empty "--listen" "$listen"
+
+  instance_ip_address=$(get_instance_ip_address)
+
+  if [[ -z "$listen" ]]; then
+    listen=$instance_ip_address
+  fi
 
   update_config "$seeds" "$listen"
   run_service

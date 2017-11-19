@@ -39,7 +39,7 @@
           "DEBIAN_FRONTEND=noninteractive apt-get -y upgrade",
           "echo \"deb https://packages.microsoft.com/repos/azure-cli/ wheezy main\" | sudo tee /etc/apt/sources.list.d/azure-cli.list",
           "apt-key adv --keyserver packages.microsoft.com --recv-keys 417A0893",
-          "apt-get update && apt-get install -y git libssl-dev libffi-dev python-dev build-essential apt-transport-https azure-cli",
+          "apt-get update && apt-get install -y git libssl-dev libffi-dev python-dev build-essential apt-transport-https azure-cli jq",
   
           "chmod +x /tmp/terraform-azurerm-cassandra/modules/install-cassandra/install-cassandra",
           "/tmp/terraform-azurerm-cassandra/modules/install-cassandra/install-cassandra --series {{user `cassandra_version`}}"
