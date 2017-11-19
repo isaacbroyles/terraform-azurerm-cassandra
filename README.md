@@ -1,4 +1,4 @@
-# terraform-azuremr-cassandra
+# terraform-azurerm-cassandra
 
 ## Prerequisites
 
