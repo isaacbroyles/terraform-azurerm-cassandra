@@ -6,43 +6,43 @@ terraform {
 # CREATE A LOAD BALANCER FOR TEST ACCESS (SHOULD BE DISABLED FOR PROD)
 #---------------------------------------------------------------------------------------------------------------------
 resource "azurerm_public_ip" "cassandra_access" {
-  count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
-  name = "${var.cluster_name}_access"
-  location = "${var.location}"
-  resource_group_name = "${var.resource_group_name}"
+  count                        = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
+  name                         = "${var.cluster_name}_access"
+  location                     = "${var.location}"
+  resource_group_name          = "${var.resource_group_name}"
   public_ip_address_allocation = "static"
-  domain_name_label = "${var.cluster_name}"
+  domain_name_label            = "${var.cluster_name}"
 }
 
 resource "azurerm_lb" "cassandra_access" {
-  count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
-  name = "${var.cluster_name}_access"
-  location = "${var.location}"
+  count               = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
+  name                = "${var.cluster_name}_access"
+  location            = "${var.location}"
   resource_group_name = "${var.resource_group_name}"
 
   frontend_ip_configuration {
-    name = "PublicIPAddress"
+    name                 = "PublicIPAddress"
     public_ip_address_id = "${azurerm_public_ip.cassandra_access.id}"
   }
 }
 
 resource "azurerm_lb_nat_pool" "cassandra_lbnatpool" {
-  count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
-  resource_group_name = "${var.resource_group_name}"
-  name = "ssh"
-  loadbalancer_id = "${azurerm_lb.cassandra_access.id}"
-  protocol = "Tcp"
-  frontend_port_start = 2200
-  frontend_port_end = 2299
-  backend_port = 22
+  count                          = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
+  resource_group_name            = "${var.resource_group_name}"
+  name                           = "ssh"
+  loadbalancer_id                = "${azurerm_lb.cassandra_access.id}"
+  protocol                       = "Tcp"
+  frontend_port_start            = 2200
+  frontend_port_end              = 2299
+  backend_port                   = 22
   frontend_ip_configuration_name = "PublicIPAddress"
 }
 
 resource "azurerm_lb_backend_address_pool" "cassandra_bepool" {
-  count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
+  count               = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
   resource_group_name = "${var.resource_group_name}"
-  loadbalancer_id = "${azurerm_lb.cassandra_access.id}"
-  name = "BackEndAddressPool"
+  loadbalancer_id     = "${azurerm_lb.cassandra_access.id}"
+  name                = "BackEndAddressPool"
 }
 
 #---------------------------------------------------------------------------------------------------------------------
@@ -50,42 +50,42 @@ resource "azurerm_lb_backend_address_pool" "cassandra_bepool" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_machine_scale_set" "cassandra" {
-  count = "${var.associate_public_ip_address_load_balancer ? 0 : 1}"
-  name = "${var.cluster_name}"
-  location = "${var.location}"
+  count               = "${var.associate_public_ip_address_load_balancer ? 0 : 1}"
+  name                = "${var.cluster_name}"
+  location            = "${var.location}"
   resource_group_name = "${var.resource_group_name}"
   upgrade_policy_mode = "Manual"
 
   sku {
-    name = "${var.instance_size}"
-    tier = "${var.instance_tier}"
+    name     = "${var.instance_size}"
+    tier     = "${var.instance_tier}"
     capacity = "${var.cluster_size}"
   }
 
   os_profile {
     computer_name_prefix = "${var.computer_name_prefix}"
-    admin_username = "${var.admin_user_name}"
+    admin_username       = "${var.admin_user_name}"
 
     #This password is unimportant as it is disabled below in the os_profile_linux_config
     admin_password = "Passwword1234"
-    custom_data = "${var.custom_data}"
+    custom_data    = "${var.custom_data}"
   }
 
   os_profile_linux_config {
     disable_password_authentication = true
 
     ssh_keys {
-      path = "/home/${var.admin_user_name}/.ssh/authorized_keys"
+      path     = "/home/${var.admin_user_name}/.ssh/authorized_keys"
       key_data = "${var.key_data}"
     }
   }
 
   network_profile {
-    name = "CassandraNetworkProfile"
+    name    = "CassandraNetworkProfile"
     primary = true
 
     ip_configuration {
-      name = "CassandraIPConfiguration"
+      name      = "CassandraIPConfiguration"
       subnet_id = "${var.subnet_id}"
     }
   }
@@ -95,10 +95,10 @@ resource "azurerm_virtual_machine_scale_set" "cassandra" {
   }
 
   storage_profile_os_disk {
-    name = ""
-    caching = "ReadWrite"
-    create_option = "FromImage"
-    os_type = "Linux"
+    name              = ""
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    os_type           = "Linux"
     managed_disk_type = "Standard_LRS"
   }
 
@@ -112,45 +112,48 @@ resource "azurerm_virtual_machine_scale_set" "cassandra" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_virtual_machine_scale_set" "cassandra_with_load_balancer" {
-  count = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
-  name = "${var.cluster_name}"
-  location = "${var.location}"
+  count               = "${var.associate_public_ip_address_load_balancer ? 1 : 0}"
+  name                = "${var.cluster_name}"
+  location            = "${var.location}"
   resource_group_name = "${var.resource_group_name}"
   upgrade_policy_mode = "Manual"
 
   sku {
-    name = "${var.instance_size}"
-    tier = "${var.instance_tier}"
+    name     = "${var.instance_size}"
+    tier     = "${var.instance_tier}"
     capacity = "${var.cluster_size}"
   }
 
   os_profile {
     computer_name_prefix = "${var.computer_name_prefix}"
-    admin_username = "${var.admin_user_name}"
+    admin_username       = "${var.admin_user_name}"
 
     #This password is unimportant as it is disabled below in the os_profile_linux_config
     admin_password = "Passwword1234"
-    custom_data = "${var.custom_data}"
+    custom_data    = "${var.custom_data}"
   }
 
   os_profile_linux_config {
     disable_password_authentication = true
 
     ssh_keys {
-      path = "/home/${var.admin_user_name}/.ssh/authorized_keys"
+      path     = "/home/${var.admin_user_name}/.ssh/authorized_keys"
       key_data = "${var.key_data}"
     }
   }
 
   network_profile {
-    name = "CassandraNetworkProfile"
+    name    = "CassandraNetworkProfile"
     primary = true
 
     ip_configuration {
-      name = "CassandraIPConfiguration"
+      name      = "CassandraIPConfiguration"
       subnet_id = "${var.subnet_id}"
+
       load_balancer_backend_address_pool_ids = [
-        "${azurerm_lb_backend_address_pool.cassandra_bepool.id}"]
+        "${azurerm_lb_backend_address_pool.cassandra_bepool.id}",
+      ]
+
       load_balancer_inbound_nat_rules_ids = ["${element(azurerm_lb_nat_pool.cassandra_lbnatpool.*.id, count.index)}"]
     }
   }
@@ -160,10 +163,10 @@ resource "azurerm_virtual_machine_scale_set" "cassandra_with_load_balancer" {
   }
 
   storage_profile_os_disk {
-    name = ""
-    caching = "ReadWrite"
-    create_option = "FromImage"
-    os_type = "Linux"
+    name              = ""
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    os_type           = "Linux"
     managed_disk_type = "Standard_LRS"
   }
 
@@ -177,23 +180,23 @@ resource "azurerm_virtual_machine_scale_set" "cassandra_with_load_balancer" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "azurerm_network_security_group" "cassandra" {
-  name = "${var.cluster_name}"
-  location = "${var.location}"
+  name                = "${var.cluster_name}"
+  location            = "${var.location}"
   resource_group_name = "${var.resource_group_name}"
 }
 
 resource "azurerm_network_security_rule" "ssh" {
   count = "${length(var.allowed_ssh_cidr_blocks)}"
 
-  access = "Allow"
-  destination_address_prefix = "*"
-  destination_port_range = "22"
-  direction = "Inbound"
-  name = "SSH${count.index}"
+  access                      = "Allow"
+  destination_address_prefix  = "*"
+  destination_port_range      = "22"
+  direction                   = "Inbound"
+  name                        = "SSH${count.index}"
   network_security_group_name = "${azurerm_network_security_group.cassandra.name}"
-  priority = "${100 + count.index}"
-  protocol = "Tcp"
-  resource_group_name = "${var.resource_group_name}"
-  source_address_prefix = "${element(var.allowed_ssh_cidr_blocks, count.index)}"
-  source_port_range = "1024-65535"
+  priority                    = "${100 + count.index}"
+  protocol                    = "Tcp"
+  resource_group_name         = "${var.resource_group_name}"
+  source_address_prefix       = "${element(var.allowed_ssh_cidr_blocks, count.index)}"
+  source_port_range           = "1024-65535"
 }

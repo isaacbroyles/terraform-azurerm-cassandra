@@ -41,17 +41,17 @@ variable "custom_data" {
 # ---------------------------------------------------------------------------------------------------------------------
 variable "instance_tier" {
   description = "Specifies the tier of virtual machines in a scale set. Possible values, standard or basic."
-  default = "standard"
+  default     = "standard"
 }
 
 variable "computer_name_prefix" {
   description = "The string that the name of each instance in the cluster will be prefixed with"
-  default = "cassandra"
+  default     = "cassandra"
 }
 
 variable "admin_user_name" {
   description = "The name of the administrator user for each instance in the cluster"
-  default = "cassandraadmin"
+  default     = "cassandraadmin"
 }
 
 variable "instance_root_volume_size" {

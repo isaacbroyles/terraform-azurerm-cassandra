@@ -1,5 +1,10 @@
-variable "public_key_data" { default =  "" }
-variable "private_key_data" { default = "" }
+variable "public_key_data" {
+  default = ""
+}
+
+variable "private_key_data" {
+  default = ""
+}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # REQUIRED PARAMETERS
@@ -43,35 +48,35 @@ variable "seeds" {
 # ---------------------------------------------------------------------------------------------------------------------
 variable "location" {
   description = "The Azure region the cassandra cluster will be deployed in"
-  default = "South Central US"
+  default     = "South Central US"
 }
 
 variable "address_space" {
   description = "The supernet for the resources that will be created"
-  default = "10.0.0.0/16"
+  default     = "10.0.0.0/16"
 }
 
 variable "subnet_address" {
   description = "The subnet that cassandra resources will be deployed into"
-  default = "10.0.10.0/24"
+  default     = "10.0.10.0/24"
 }
 
 variable "cassandra_cluster_name" {
   description = "What to name the Cassandra cluster and all of its associated resources"
-  default = "cassandra-example"
+  default     = "cassandra-example"
 }
 
 variable "instance_size" {
   description = "The instance size for the servers"
-  default = "Standard_A1"
+  default     = "Standard_A1"
 }
 
 variable "num_cassandra_servers" {
   description = "The number of Cassandra server nodes to deploy. We strongly recommend using 3 or 5."
-  default = 3
+  default     = 3
 }
 
 variable "listen" {
   description = "The address for the Cassandra server to listen on"
-  default = ""
+  default     = ""
 }
