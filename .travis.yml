@@ -1,0 +1,15 @@
+language: bash
+dist: trusty
+sudo: required
+cache:
+  directories:
+  - "${HOME}/bin"
+  - "${HOME}/.cache/travis-terraform-config"
+env:
+  global:
+  - PATH="${HOME}/bin:${PATH}"
+  - TMPDIR="${TMPDIR:-/tmp}"
+before_install: make deps
+script:
+- make test
+- make assert-clean

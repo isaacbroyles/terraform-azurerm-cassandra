@@ -6,7 +6,11 @@
 set -e
 
 # Send the log output from this script to custom-data.log, syslog, and the console
-exec > >(tee /var/log/custom-data.log|logger -t custom-data -s 2>/dev/console) 2>&1
+exec > >(tee /var/log/custom-data.log | logger -t custom-data -s 2>/dev/console) 2>&1
+
+if [ -z "${seeds}" ]; then
+  seeds="localhost"
+fi
 
 # The variables below are filled in via Terraform interpolation
 /opt/cassandra/bin/run-cassandra --seeds "${seeds}"

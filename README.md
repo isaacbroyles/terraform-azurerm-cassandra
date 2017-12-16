@@ -1,4 +1,5 @@
-# terraform-azurerm-cassandra
+# terraform-azurerm-cassandra 
+[![Build Status](https://travis-ci.org/isaacbroyles/terraform-azurerm-cassandra.svg?branch=master)](https://travis-ci.org/isaacbroyles/terraform-azurerm-cassandra)
 
 ## Prerequisites
 
