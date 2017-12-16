@@ -54,30 +54,9 @@ variable "admin_user_name" {
   default     = "cassandraadmin"
 }
 
-variable "instance_root_volume_size" {
-  description = "Specifies the size of the instance root volume in GB. Default 40GB"
-  default     = 40
-}
-
 variable "cluster_size" {
   description = "The number of nodes to have in the Cassandra cluster. We strongly recommended that you use either 3 or 5."
   default     = 3
-}
-
-variable "cluster_tag_key" {
-  description = "Add a tag with this key and the value var.cluster_tag_value to each Instance in the ASG. This can be used to automatically find other Cassandra nodes and form a cluster."
-  default     = "cassandra-servers"
-}
-
-variable "cluster_tag_value" {
-  description = "Add a tag with key var.clsuter_tag_key and this value to each Instance in the ASG. This can be used to automatically find other Cassandra nodes and form a cluster."
-  default     = "auto-join"
-}
-
-variable "subnet_ids" {
-  description = "The subnet IDs into which the Azure Instances should be deployed. We recommend one subnet ID per node in the cluster_size variable. At least one of var.subnet_ids or var.availability_zones must be non-empty."
-  type        = "list"
-  default     = []
 }
 
 variable "allowed_ssh_cidr_blocks" {
@@ -89,71 +68,4 @@ variable "allowed_ssh_cidr_blocks" {
 variable "associate_public_ip_address_load_balancer" {
   description = "If set to true, create a public IP address with back end pool to allow SSH publically to the instances."
   default     = false
-}
-
-variable "root_volume_type" {
-  description = "The type of volume. Must be one of: standard, gp2, or io1."
-  default     = "standard"
-}
-
-variable "root_volume_size" {
-  description = "The size, in GB, of the root EBS volume."
-  default     = 50
-}
-
-variable "root_volume_delete_on_termination" {
-  description = "Whether the volume should be destroyed on instance termination."
-  default     = true
-}
-
-variable "target_group_arns" {
-  description = "A list of target group ARNs of Application Load Balanacer (ALB) targets to associate with this ASG. If you're using a Elastic Load Balancer (AKA ELB Classic), use the load_balancers variable instead."
-  type        = "list"
-  default     = []
-}
-
-variable "load_balancers" {
-  description = "A list of Elastic Load Balancer (ELB) names to associate with this ASG. If you're using an Application Load Balancer (ALB), use the target_group_arns variable instead."
-  type        = "list"
-  default     = []
-}
-
-variable "wait_for_capacity_timeout" {
-  description = "A maximum duration that Terraform should wait for ASG instances to be healthy before timing out. Setting this to '0' causes Terraform to skip all Capacity Waiting behavior."
-  default     = "10m"
-}
-
-variable "server_rpc_port" {
-  description = "The port used by servers to handle incoming requests from other agents."
-  default     = 8300
-}
-
-variable "cli_rpc_port" {
-  description = "The port used by all agents to handle RPC from the CLI."
-  default     = 8400
-}
-
-variable "serf_lan_port" {
-  description = "The port used to handle gossip in the LAN. Required by all agents."
-  default     = 8301
-}
-
-variable "serf_wan_port" {
-  description = "The port used by servers to gossip over the WAN to other servers."
-  default     = 8302
-}
-
-variable "http_api_port" {
-  description = "The port used by clients to talk to the HTTP API"
-  default     = 8500
-}
-
-variable "dns_port" {
-  description = "The port used to resolve DNS queries."
-  default     = 8600
-}
-
-variable "ssh_port" {
-  description = "The port used for SSH connections"
-  default     = 22
 }
