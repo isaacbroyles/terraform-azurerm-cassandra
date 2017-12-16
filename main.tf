@@ -46,8 +46,8 @@ module "cassandra_servers" {
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-# THE CUSTOM DATA SCRIPT THAT WILL RUN ON EACH CONSUL SERVER AZURE INSTANCE WHEN IT'S BOOTING
-# This script will configure and start Consul
+# THE CUSTOM DATA SCRIPT THAT WILL RUN ON EACH CASSANDRA SERVER AZURE INSTANCE WHEN IT'S BOOTING
+# This script will configure and start Cassandra
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "template_file" "user_data_cassandra" {
