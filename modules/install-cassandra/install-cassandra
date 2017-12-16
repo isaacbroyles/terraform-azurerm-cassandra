@@ -5,7 +5,7 @@ set -e
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly DEFAULT_INSTALL_PATH="/opt/cassandra"
 
-function print_usage {
+function print_usage() {
   echo
   echo "Usage: install-cassandra [OPTIONS]"
   echo
@@ -13,36 +13,37 @@ function print_usage {
   echo
   echo "Options:"
   echo
-  echo -e "  --series\t\tThe version series of Cassandra to install. Required."
+  echo -e "  --series\\t\\tThe version series of Cassandra to install. Required."
   echo
   echo "Example:"
   echo
   echo "  install-cassandra --series 22x"
 }
 
-function log {
+function log() {
   local readonly level="$1"
   local readonly message="$2"
-  local readonly timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-  >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
+  local readonly timestamp
+  timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  echo >&2 -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
 }
 
-function log_info {
+function log_info() {
   local readonly message="$1"
   log "INFO" "$message"
 }
 
-function log_warn {
+function log_warn() {
   local readonly message="$1"
   log "WARN" "$message"
 }
 
-function log_error {
+function log_error() {
   local readonly message="$1"
   log "ERROR" "$message"
 }
 
-function assert_not_empty {
+function assert_not_empty() {
   local readonly arg_name="$1"
   local readonly arg_value="$2"
 
@@ -53,19 +54,19 @@ function assert_not_empty {
   fi
 }
 
-function install_dependencies {
-  sudo apt-get install -y default-jre
-  sudo apt-get install -y python
+function install_dependencies() {
+  sudo apt-get "install" -y default-jre
+  sudo apt-get "install" -y python
 }
 
-function add_apache_repository {
+function add_apache_repository() {
   local readonly series="$1"
 
   echo "deb http://www.apache.org/dist/cassandra/debian $series main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
   curl https://www.apache.org/dist/cassandra/KEYS | sudo apt-key add -
 }
 
-function create_cassandra_install_paths {
+function create_cassandra_install_paths() {
   local readonly path="$1"
 
   log_info "Creating install dirs for Cassandra at $path"
@@ -73,44 +74,44 @@ function create_cassandra_install_paths {
   sudo mkdir -p "$path/bin"
 }
 
-function install_cassandra {
+function install_cassandra() {
   local readonly path="$1"
   local readonly series="$2"
   local readonly bin_dir="$path/bin"
+  # shellcheck disable=SC2034
   local readonly run_cassandra_dest_path="$bin_dir/run-cassandra"
 
   add_apache_repository "$series"
 
   sudo apt-get update
-  sudo apt-get install -y cassandra
-
+  sudo apt-get "install" -y cassandra
 
   log_info "Copying Cassandra run script to $run_cassandra_dest_path"
   sudo cp "$SCRIPT_DIR/../run-cassandra/run-cassandra" "$run_cassandra_dest_path"
   sudo chmod +x "$run_cassandra_dest_path"
 }
 
-function install {
+function main_install() {
   local series=""
   local path="$DEFAULT_INSTALL_PATH"
 
-  while [[ $# > 0 ]]; do
+  while [[ $# -gt 0 ]]; do
     local key="$1"
 
     case "$key" in
-      --series)
-        series="$2"
-        shift
-        ;;
-      --help)
-        print_usage
-        exit
-        ;;
-      *)
-        log_error "Unrecognized argument: $key"
-        print_usage
-        exit 1
-        ;;
+    --series)
+      series="$2"
+      shift
+      ;;
+    --help)
+      print_usage
+      exit
+      ;;
+    *)
+      log_error "Unrecognized argument: $key"
+      print_usage
+      exit 1
+      ;;
     esac
 
     shift
@@ -127,4 +128,4 @@ function install {
   log_info "Cassandra install complete!"
 }
 
-install "$@"
+main_install "$@"
