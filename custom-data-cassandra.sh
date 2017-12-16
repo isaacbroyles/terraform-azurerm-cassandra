@@ -1,7 +1,6 @@
 #!/bin/bash
 # This script is meant to be run in the Custom Data of each Azure Instance while it's booting. The script uses the
-# run-cassandra script to configure and start Consul in client mode and then the run-cassandra script to configure and start
-# Cassandra in server mode. Note that this script assumes it's running in an Azure Image built from the Packer template in
+# run-cassandra script to start Cassandra. Note that this script assumes it's running in an Azure Image built from the Packer template in
 # examples/cassandra-cassandra-ami/cassandra-cassandra.json.
 
 set -e

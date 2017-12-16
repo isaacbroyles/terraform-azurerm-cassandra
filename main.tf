@@ -32,22 +32,21 @@ module "cassandra_servers" {
 
   cluster_name = "${var.cassandra_cluster_name}"
   cluster_size = "${var.num_cassandra_servers}"
-  key_data = "${var.key_data}"
+  key_data     = "${var.key_data}"
 
   resource_group_name = "${var.resource_group_name}"
 
-  location = "${var.location}"
-  custom_data = "${data.template_file.user_data_cassandra.rendered}"
-  instance_size = "${var.instance_size}"
-  image_id = "${var.image_uri}"
-  subnet_id = "${azurerm_subnet.cassandra.id}"
+  location                                  = "${var.location}"
+  custom_data                               = "${data.template_file.user_data_cassandra.rendered}"
+  instance_size                             = "${var.instance_size}"
+  image_id                                  = "${var.image_uri}"
+  subnet_id                                 = "${azurerm_subnet.cassandra.id}"
   associate_public_ip_address_load_balancer = true
 }
 
-
 # ---------------------------------------------------------------------------------------------------------------------
-# THE CUSTOM DATA SCRIPT THAT WILL RUN ON EACH CONSUL SERVER AZURE INSTANCE WHEN IT'S BOOTING
-# This script will configure and start Consul
+# THE CUSTOM DATA SCRIPT THAT WILL RUN ON EACH CASSANDRA SERVER AZURE INSTANCE WHEN IT'S BOOTING
+# This script will configure and start Cassandra
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "template_file" "user_data_cassandra" {
@@ -55,6 +54,6 @@ data "template_file" "user_data_cassandra" {
 
   vars {
     listen = "${var.listen}"
-    seeds = "${var.seeds}"
+    seeds  = "${var.seeds}"
   }
 }
