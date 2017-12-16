@@ -24,7 +24,7 @@ deps: .ensure-terraforms .ensure-shellcheck .ensure-shfmt
 
 .PHONY: .ensure-terraforms
 .ensure-terraforms:
-	$(GIT) ls-files '*/Makefile' | \
+	$(GIT) ls-files 'Makefile' '*/Makefile' | \
 		xargs -n 1 $(MAKE) .echo-tf-version -f 2>/dev/null | \
 		grep -v make | \
 		sort | \
