@@ -10,7 +10,7 @@ TAR := tar
 
 .PHONY: test
 test:
-	./runtests --force --env .example.env
+	./runtests --env .example.env
 
 include $(shell git rev-parse --show-toplevel)/terraform-common.mk
 
